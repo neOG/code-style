@@ -6,9 +6,45 @@
 
 ## 字符串拼接
 
+大量字符串拼接不要直接使用 + (`string` 是不可变类型，每次拼接都需开辟新内存空间），推荐使用  `strings.Buffer` 。
 
+```go
+func builderConcat(n int, str string) string {
+    var builder strings.Builder
+    for i := 0; i < n; i++ {
+        builder.WriteString(str)
+    }
+    return builder.String()
+}
 
+// If the length is certain, we can also use pre allocated memory.
+func builderConcat(n int, str string) string {
+    var builder strings.Builder
+    builder.Grow(n * len(str))
+    for i := 0; i < n; i++ {
+        builder.WriteString(str)
+    }
+    return builder.String()
+}
+```
 
+&nbsp;
+
+### bytes.Buffer
+
+`bytes.Buffer` 和 `strings.Builder`  底层都是 `[]byte` 数组，也可以在大量字符串拼接时使用，但 `strings.Builder` 性能比 `bytes.Buffer` 略快约 10% 。一个比较重要的区别在于，`bytes.Buffer` 转化为字符串时重新申请了一块空间，存放生成的字符串变量，而 `strings.Builder` 直接将底层的 `[]byte` 转换成了字符串类型返回了回来。
+
+&nbsp;
+
+&nbsp;
+
+## for 和 range
+
+range 在迭代过程中返回的是迭代值的拷贝，如果每次迭代的元素的内存占用很低，那么 for 和 range 的性能几乎是一样，例如 `[]int`。但是如果迭代的元素内存占用较高，例如一个包含很多属性的 struct 结构体，那么 for 的性能将显著地高于 range，有时候甚至会有上千倍的性能差异。对于这种场景，建议使用 for，如果使用 range，建议只迭代下标，通过下标访问迭代值，这种使用方式和 for 就没有区别了。如果想使用 range 同时迭代下标和值，则需要将切片/数组的元素改为指针，才能不影响性能。
+
+&nbsp;
+
+&nbsp;
 
 ## slice 陷阱
 
@@ -16,14 +52,14 @@
 
 ```go
 func foo(a []int) {
-	a = append(a, 1, 2, 3, 4, 5, 6, 7, 8)
-	a[0] = 200
+    a = append(a, 1, 2, 3, 4, 5, 6, 7, 8)
+    a[0] = 200
 }
 
 func main() {
-	a := []int{1, 2}
-	foo(a)
-	fmt.Println(a)
+    a := []int{1, 2}
+    foo(a)
+    fmt.Println(a)
 }
 ```
 
@@ -37,15 +73,15 @@ func main() {
 
 ```go
 func foo(a []int) []int {
-	a = append(a, 1, 2, 3, 4, 5, 6, 7, 8)
-	a[0] = 200
-	return a
+    a = append(a, 1, 2, 3, 4, 5, 6, 7, 8)
+    a[0] = 200
+    return a
 }
 
 func main() {
-	a := []int{1, 2}
-	a = foo(a)
-	fmt.Println(a)
+    a := []int{1, 2}
+    a = foo(a)
+    fmt.Println(a)
 }
 ```
 
@@ -57,14 +93,14 @@ func main() {
 
 ```go
 func foo(a *[]int) {
-	*a = append(*a, 1, 2, 3, 4, 5, 6, 7, 8)
-	(*a)[0] = 200
+    *a = append(*a, 1, 2, 3, 4, 5, 6, 7, 8)
+    (*a)[0] = 200
 }
 
 func main() {
-	a := []int{1, 2}
-	foo(&a)
-	fmt.Println(a)
+    a := []int{1, 2}
+    foo(&a)
+    fmt.Println(a)
 }
 ```
 
@@ -94,24 +130,24 @@ Go 语言标准库没有提供 Set 的实现，通常使用 map 来代替。事�
 type Set map[string]struct{}
 
 func (s Set) Has(key string) bool {
-	_, ok := s[key]
-	return ok
+    _, ok := s[key]
+    return ok
 }
 
 func (s Set) Add(key string) {
-	s[key] = struct{}{}
+    s[key] = struct{}{}
 }
 
 func (s Set) Delete(key string) {
-	delete(s, key)
+    delete(s, key)
 }
 
 func main() {
-	s := make(Set)
-	s.Add("Tom")
-	s.Add("Sam")
-	fmt.Println(s.Has("Tom"))
-	fmt.Println(s.Has("Jack"))
+    s := make(Set)
+    s.Add("Tom")
+    s.Add("Sam")
+    fmt.Println(s.Has("Tom"))
+    fmt.Println(s.Has("Jack"))
 }
 ```
 
@@ -123,15 +159,15 @@ func main() {
 
 ```go
 func worker(ch chan struct{}) {
-	<-ch
-	fmt.Println("do something")
-	close(ch)
+    <-ch
+    fmt.Println("do something")
+    close(ch)
 }
 
 func main() {
-	ch := make(chan struct{})
-	go worker(ch)
-	ch <- struct{}{}
+    ch := make(chan struct{})
+    go worker(ch)
+    ch <- struct{}{}
 }
 ```
 
@@ -145,11 +181,11 @@ func main() {
 type Door struct{}
 
 func (d Door) Open() {
-	fmt.Println("Open the door")
+    fmt.Println("Open the door")
 }
 
 func (d Door) Close() {
-	fmt.Println("Close the door")
+    fmt.Println("Close the door")
 }
 ```
 
@@ -171,20 +207,20 @@ CPU 始终以字长访问内存，如果不进行内存对齐，很可能增加 
 
 ```go
 type demo1 struct {
-	a int8
-	b int16
-	c int32
+    a int8
+    b int16
+    c int32
 }
 
 type demo2 struct {
-	a int8
-	c int32
-	b int16
+    a int8
+    c int32
+    b int16
 }
 
 func main() {
-	fmt.Println(unsafe.Sizeof(demo1{})) // 8
-	fmt.Println(unsafe.Sizeof(demo2{})) // 12
+    fmt.Println(unsafe.Sizeof(demo1{})) // 8
+    fmt.Println(unsafe.Sizeof(demo2{})) // 12
 }
 ```
 
@@ -220,18 +256,18 @@ demo2 的对齐倍数由 c 的对齐倍数决定，也是 4，因此，demo2 的
 
 ```go
 type demo3 struct {
-	c int32
-	a struct{}
+    c int32
+    a struct{}
 }
 
 type demo4 struct {
-	a struct{}
-	c int32
+    a struct{}
+    c int32
 }
 
 func main() {
-	fmt.Println(unsafe.Sizeof(demo3{})) // 8
-	fmt.Println(unsafe.Sizeof(demo4{})) // 4
+    fmt.Println(unsafe.Sizeof(demo3{})) // 8
+    fmt.Println(unsafe.Sizeof(demo4{})) // 4
 }
 ```
 

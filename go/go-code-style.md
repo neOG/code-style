@@ -13,11 +13,10 @@
 import "a"
 import "b"
 
-
 // Yes
 import (
-  "a"
-  "b"
+    "a"
+    "b"
 )
 ```
 
@@ -36,21 +35,20 @@ var b = 2
 type Area float64
 type Volume float64
 
-
 // Yes
 const (
-  a = 1
-  b = 2
+    a = 1
+    b = 2
 )
 
 var (
-  a = 1
-  b = 2
+    a = 1
+    b = 2
 )
 
 type (
-  Area float64
-  Volume float64
+    Area   float64
+    Volume float64
 )
 ```
 
@@ -61,20 +59,19 @@ type (
 ```go
 // Yes but no enough.
 import (
-  "fmt"
-  "os"
-  "go.uber.org/atomic"
-  "golang.org/x/sync/errgroup"
+    "fmt"
+    "os"
+    "go.uber.org/atomic"
+    "golang.org/x/sync/errgroup"
 )
-
 
 // Good
 import (
-  "fmt"
-  "os"
+    "fmt"
+    "os"
 
-  "go.uber.org/atomic"
-  "golang.org/x/sync/errgroup"
+    "go.uber.org/atomic"
+    "golang.org/x/sync/errgroup"
 )
 ```
 
@@ -99,10 +96,10 @@ import (
 ```go
 // Yes
 import (
-  "net/http"
+    "net/http"
 
-  client "example.com/client-go"
-  trace "example.com/trace/v2"
+    client "example.com/client-go"
+    trace "example.com/trace/v2"
 )
 ```
 
@@ -113,20 +110,19 @@ import 别名要尽量避免，只有在不得不起别名的时候再这么做�
 ```go
 // No
 import (
-  "fmt"
-  "os"
+    "fmt"
+    "os"
 
-  nettrace "golang.net/x/trace"
+    nettrace "golang.net/x/trace"
 )
-
 
 // Yes
 import (
-  "fmt"
-  "os"
-  "runtime/trace"
+    "fmt"
+    "os"
+    "runtime/trace"
 
-  nettrace "golang.net/x/trace"
+    nettrace "golang.net/x/trace"
 )
 ```
 
@@ -167,32 +163,33 @@ if err != nil {
 ```go
 // No
 for _, v := range data {
-  if v.F1 == 1 {
-    v = process(v)
-    if err := v.Call(); err == nil {
-      v.Send()
+    if v.F1 == 1 {
+        v = process(v)
+        if err := v.Call(); err == nil {
+            v.Send()
+        } else {
+            return err
+        }
     } else {
-      return err
+        log.Printf("Invalid v: %v", v)
     }
-  } else {
-    log.Printf("Invalid v: %v", v)
-  }
 }
 
 
 // Yes
 for _, v := range data {
-  if v.F1 != 1 {
-    log.Printf("Invalid v: %v", v)
-    continue
-  }
+    if v.F1 != 1 {
+        log.Printf("Invalid v: %v", v)
+        continue
+    }
 
-  v = process(v)
-  if err := v.Call(); err != nil {
-    return err
-  }
-  v.Send()
+    v = process(v)
+    if err := v.Call(); err != nil {
+        return err
+    }
+    v.Send()
 }
+
 ```
 
 &nbsp;
@@ -207,16 +204,16 @@ for _, v := range data {
 // No
 var a int
 if b {
-  a = 100
+    a = 100
 } else {
-  a = 10
+    a = 10
 }
 
 
 // Yes
 a := 10
 if b {
-  a = 100
+    a = 100
 }
 ```
 
@@ -267,18 +264,19 @@ var _e error = F()
 struct 中的嵌套类型在 field 列表排在最前面，并且用空行分隔开。
 
 ```go
+package main
+
 // No
 type Client struct {
-  version int
-  http.Client
+    version int
+    http.Client
 }
-
 
 // Yes
 type Client struct {
-  http.Client
+    http.Client
 
-  version int
+    version int
 }
 ```
 
@@ -387,15 +385,15 @@ printInfo("foo", true /* isLocal */, true /* done */)
 type Region int
 
 const (
-  UnknownRegion Region = iota
-  Local
+    UnknownRegion Region = iota
+    Local
 )
 
 type Status int
 
 const (
-  StatusReady = iota + 1
-  StatusDone
+    StatusReady = iota + 1
+    StatusDone
   // Maybe we will have a StatusInProgress in the future.
 )
 
@@ -426,26 +424,26 @@ if err := ioutil.WriteFile(name, data, 0644); err != nil {
 ```go
 // No
 if data, err := ioutil.ReadFile(name); err == nil {
-  err = cfg.Decode(data)
-  if err != nil {
+err = cfg.Decode(data)
+if err != nil {
     return err
-  }
+}
 
-  fmt.Println(cfg)
-  return nil
+fmt.Println(cfg)
+    return nil
 } else {
-  return err
+    return err
 }
 
 
 // Yes
 data, err := ioutil.ReadFile(name)
 if err != nil {
-   return err
+    return err
 }
 
 if err := cfg.Decode(data); err != nil {
-  return err
+    return err
 }
 
 fmt.Println(cfg)
